@@ -19,22 +19,26 @@ const discordTranscripts = require('discord-html-transcripts');
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers
     ]
 });
 
 // --- CẤU HÌNH ID KÊNH & ROLE HỆ THỐNG ---
-const VOUCH_LOG_CHANNEL_ID = '1537333769189720147';       
-const ADMIN_REPORT_CHANNEL_ID = '1537333911095611443';    
-const TRANSCRIPT_LOG_CHANNEL_ID = '1543271390839443536'; 
+const VOUCH_LOG_CHANNEL_ID = '1548557918977138779';       // Kênh bot gửi vouch
+const ADMIN_REPORT_CHANNEL_ID = '1537333911095611443';    // Kênh nhận log Report Scammer
+const TRANSCRIPT_LOG_CHANNEL_ID = '1548609339097481296'; // Kênh gửi transcript
 
-const OWNER_ROLE_ID = '1436983276777509010';             
-const MANAGER_ROLE_ID = '1437440890011521105';         
+// --- CẤU HÌNH ID ROLE ---
+const HOANG_DE_ROLE_ID = '1456863702677459088';          // Role Hoàng Đế Thiên Hà (Owner)
+const CHU_DE_CHE_ROLE_ID = '1548618704080736356';        // Role Chủ Đế Chế
+const CHU_HE_MAT_TROI_ROLE_ID = '1548931132765114426';    // Role Chủ Hệ Mặt Trời
+const TU_DAI_THIEN_VUONG_ROLE_ID = '1548930031550730371'; // Role Tứ Đại Thiên Vương
+const THUONG_GIA_THIEN_HA_ROLE_ID = '1508249314781040770';// Role Thương Gia
+const GDTG_STAFF_ROLE_ID = '1550121929162236034';         // Role Nhân viên GDTG
 
-const GDTG_STAFF_ROLE_ID = '1440714450247090257';       
-const SELLER_ROLE_ID = '1441449735192838245';           
+const MANAGER_ROLE_ID = '1437440890011521105';          // Role Manager (nếu dùng)
+const SELLER_ROLE_ID = '1441449735192838245';            // Role Seller (nếu dùng)
 
 // --- BỘ NHỚ LƯU TRỮ TẠM THỜI (DATABASE IN-MEMORY) ---
 const ticketData = {};
@@ -100,143 +104,9 @@ client.once('ready', () => {
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
-    // --- LỆNH !QR VÀ CÁC THAM SỐ (TUNA, KYEAZ, BIAHANOI, HOẶC QR ĐỘNG KÈM NỘI DUNG TÙY CHỈNH) ---
-    if (message.content.startsWith('!qr')) {
-        const args = message.content.split(' ').slice(1);
-        const subCommand = args[0] ? args[0].toLowerCase() : '';
-
-        // Xóa tin nhắn lệnh của người dùng để kênh gọn gàng
-        message.delete().catch(() => {});
-
-        // 1. Nếu chỉ gõ mỗi "!qr" -> Gửi bảng hướng dẫn cú pháp (ẩn - ephemeral)
-        if (!subCommand) {
-            const qrHelpEmbed = new EmbedBuilder()
-                .setTitle('💳 HỆ THỐNG MÃ QR & THÔNG TIN THANH TOÁN')
-                .setDescription('Vui lòng sử dụng cú pháp đầy đủ để xem thông tin QR tương ứng:\n' +
-                                '• `!qr tuna` - Xem thông tin của Tuna\n' +
-                                '• `!qr kyeaz` - Xem thông tin của Kyeaz\n' +
-                                '• `!qr biahanoi` - Xem thông tin của Bia Ha Noi\n' +
-                                '• `!qr <số_tiền> [nội_dung]` - Tạo mã QR Techcombank kèm nội dung tùy chỉnh\n' +
-                                '  *(Ví dụ: `!qr 15k mua acc blox fruits`)*')
-                .setColor('#3498db')
-                .setTimestamp();
-
-            return message.reply({ embeds: [qrHelpEmbed], ephemeral: true });
-        }
-
-        // 2. Nếu gõ "!qr tuna" -> Hiện thông tin của Tuna (Công khai)
-        if (subCommand === 'tuna') {
-            const tunaEmbed = new EmbedBuilder()
-                .setTitle('💳 THÔNG TIN THANH TOÁN - TUNA')
-                .addFields(
-                    { name: '🏦 Ngân hàng', value: 'Techcombank', inline: true },
-                    { name: '🔢 Số tài khoản', value: '`19076472492011`', inline: true },
-                    { name: '👤 Chủ tài khoản', value: '**NGUYEN TRONG TUNG**', inline: false }
-                )
-                .setImage('https://media.discordapp.net/attachments/1426391263594287116/1543875437774639165/IMG_2154.jpg?ex=6a96758c&is=6a95240c&hm=b6ee7489208fcbc3df314eb46aa1879883ac8ca30d6fe244c9854953ec900b4c&=&format=webp&width=631&height=1024') 
-                .setColor('#00ffcc')
-                .setTimestamp();
-
-            return message.channel.send({ embeds: [tunaEmbed] });
-        }
-
-        // 3. Nếu gõ "!qr kyeaz" -> Hiện thông tin của Kyeaz gộp chung 1 bảng bằng Description
-        if (subCommand === 'kyeaz') {
-            const kyeazEmbed1 = new EmbedBuilder()
-                .setTitle('💳 THÔNG TIN THANH TOÁN - KYEAZ (ZaloPay)')
-                .addFields(
-                    { name: '🏦 Hình thức', value: 'ZaloPay', inline: true },
-                    { name: '👤 Chủ tài khoản', value: '**NGUYEN VAN MINH HIEU**', inline: true }
-                )
-                .setImage('https://media.discordapp.net/attachments/1444524516993929467/1543891367606878208/Screenshot_20260809_181559_Zalopay.jpg?ex=6a968462&is=6a9532e2&hm=e8c952d48912be7517a8ec67a7b3c29033fab2c253709b062a03caf36109d384&=&format=webp') 
-                .setColor('#3498db');
-
-            const kyeazEmbed2 = new EmbedBuilder()
-                .setTitle('💳 THÔNG TIN THANH TOÁN - KYEAZ (Vietcombank)')
-                .addFields(
-                    { name: '🏦 Hình thức', value: 'Vietcombank', inline: true },
-                    { name: '👤 Chủ tài khoản', value: '**NGUYEN VAN MINH HIEU**', inline: true }
-                )
-                .setImage('https://media.discordapp.net/attachments/1444524516993929467/1543891368114520064/image-1.webp?ex=6a968462&is=6a9532e2&hm=cd393cabee6ae357c10f9095f7e0ab7c7a67f7a828a688dbe37e4dae7202f13c&=&format=webp') 
-                .setColor('#f1c40f')
-                .setTimestamp();
-
-            return message.channel.send({ embeds: [kyeazEmbed1, kyeazEmbed2] });
-        }
-
-        // 4. Nếu gõ "!qr biahanoi" -> Hiện thông tin của Bia Ha Noi (Công khai)
-        if (subCommand === 'biahanoi') {
-            const biaEmbed = new EmbedBuilder()
-                .setTitle('💳 THÔNG TIN THANH TOÁN - BIA HA NOI')
-                .addFields(
-                    { name: '🏦 Ngân hàng', value: 'ZALOPAY', inline: true },
-                    { name: '🔢 Số tài khoản', value: '`Quét mã QR trực tiếp`', inline: true },
-                    { name: '👤 Chủ tài khoản', value: '**LE DANH HUY**', inline: false }
-                )
-                .setImage('https://media.discordapp.net/attachments/1526827281006465044/1543882254416089189/IMG_2094.png?ex=6a967be5&is=6a952a65&hm=6598e0d44144ea45120bf47b2b47bbb255dc770564c19c6a3773642e56a1f327&=&format=webp&quality=lossless&width=768&height=1024') 
-                .setColor('#f1c40f')
-                .setTimestamp();
-
-            return message.channel.send({ embeds: [biaEmbed] });
-        }
-
-        // 5. Trường hợp người dùng nhập số tiền và nội dung tùy chỉnh (Ví dụ: !qr 15k hoặc !qr 15k mua acc)
-        let rawAmount = subCommand;
-        let amount = 0;
-        
-        rawAmount = rawAmount.toLowerCase();
-        if (rawAmount.endsWith('k')) {
-            amount = parseInt(rawAmount.replace('k', '')) * 1000;
-        } else {
-            amount = parseInt(rawAmount);
-        }
-
-        if (!isNaN(amount) && amount > 0) {
-            const BANK_ID = 'TCB';                     // Techcombank
-            const ACCOUNT_NO = '19076472492011';       // Số tài khoản của bạn
-            const ACCOUNT_NAME = 'NGUYEN TRONG TUNG';  // Chủ tài khoản
-
-            // Lấy phần nội dung phía sau số tiền
-            let customContent = args.slice(1).join(' ');
-
-            // Nếu có nhập nội dung thì đưa vào QR, nếu không nhập thì để trống hoàn toàn
-            let qrImageUrl = '';
-            let displayContentText = '';
-
-            if (customContent) {
-                qrImageUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(customContent)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
-                displayContentText = `\`${customContent}\``;
-            } else {
-                // Không truyền tham số addInfo thì VietQR sẽ để trống nội dung
-                qrImageUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amount}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
-                displayContentText = `*Không có nội dung*`;
-            }
-
-            const dynamicQrEmbed = new EmbedBuilder()
-                .setTitle('⚡ MÃ QR TECHCOMBANK TỰ ĐỘNG')
-                .setDescription(`Quét mã QR dưới đây bằng app Ngân hàng để thanh toán chính xác **${amount.toLocaleString('vi-VN')} VNĐ**.\n*Số tiền đã được điền sẵn trên ứng dụng!*`)
-                .setColor('#e74c3c')
-                .setImage(qrImageUrl)
-                .addFields(
-                    { name: '🏦 Ngân Hàng', value: `**Techcombank (TCB)**`, inline: true },
-                    { name: '💰 Số Tiền', value: `**${amount.toLocaleString('vi-VN')} VNĐ**`, inline: true },
-                    { name: '📝 Nội Dung CK', value: displayContentText, inline: false },
-                    { name: '👤 Chủ Tài Khoản', value: `**${ACCOUNT_NAME}**`, inline: true },
-                    { name: '🔢 Số Tài Khoản', value: `\`${ACCOUNT_NO}\``, inline: true }
-                )
-                .setTimestamp();
-
-            return message.channel.send({ embeds: [dynamicQrEmbed] });
-        }
-
-        // Nếu gõ sai hoàn toàn cú pháp
-        return message.reply({ content: '❌ Sai cú pháp! Vui lòng dùng: `!qr tuna`, `!qr kyeaz`, `!qr biahanoi` hoặc `!qr <số_tiền> [nội_dung]` (Ví dụ: `!qr 15k mua acc`).', ephemeral: true });
-    }
-
-    // Lệnh thống kê doanh thu / số lượng ticket trong ngày (!doanhthu)
     if (message.content === '!doanhthu') {
         const member = message.member;
-        const isStaff = member.roles.cache.has(OWNER_ROLE_ID) ||
+        const isStaff = member.roles.cache.has(HOANG_DE_ROLE_ID) ||
                         member.roles.cache.has(MANAGER_ROLE_ID) ||
                         member.permissions.has(PermissionsBitField.Flags.Administrator);
         
@@ -274,7 +144,6 @@ client.on('messageCreate', async message => {
         return message.reply({ embeds: [doanhThuEmbed] });
     }
 
-    // Lệnh tổng hợp thống kê (!thongke)
     if (message.content === '!thongke') {
         const sortedDeposits = Object.entries(userDeposits)
             .sort((a, b) => b[1] - a[1])
@@ -309,8 +178,7 @@ client.on('messageCreate', async message => {
 
         return message.reply({ embeds: [thongKeEmbed] });
     }
-    
-    // Lệnh xem chỉ số Staff / Thành viên (!chiso @user)
+
     if (message.content.startsWith('!chiso')) {
         const targetUser = message.mentions.users.first() || message.author;
         const deposit = userDeposits[targetUser.id] || 0;
@@ -335,7 +203,7 @@ client.on('messageCreate', async message => {
 
     if (message.content.startsWith('!tiencoc')) {
         const member = message.member;
-        const isStaff = member.roles.cache.has(OWNER_ROLE_ID) ||
+        const isStaff = member.roles.cache.has(HOANG_DE_ROLE_ID) ||
                         member.permissions.has(PermissionsBitField.Flags.Administrator);
         
         if (!isStaff) {
@@ -463,7 +331,7 @@ client.on('interactionCreate', async (interaction) => {
             const member = interaction.member;
             const isStaff = member.roles.cache.has(GDTG_STAFF_ROLE_ID) || 
                             member.roles.cache.has(SELLER_ROLE_ID) || 
-                            member.roles.cache.has(OWNER_ROLE_ID) || 
+                            member.roles.cache.has(HOANG_DE_ROLE_ID) || 
                             member.roles.cache.has(MANAGER_ROLE_ID) || 
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
@@ -561,7 +429,7 @@ client.on('interactionCreate', async (interaction) => {
             const member = interaction.member;
             const isStaff = member.roles.cache.has(GDTG_STAFF_ROLE_ID) || 
                             member.roles.cache.has(SELLER_ROLE_ID) || 
-                            member.roles.cache.has(OWNER_ROLE_ID) || 
+                            member.roles.cache.has(HOANG_DE_ROLE_ID) || 
                             member.roles.cache.has(MANAGER_ROLE_ID) || 
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
@@ -591,7 +459,7 @@ client.on('interactionCreate', async (interaction) => {
             
             const isStaff = member.roles.cache.has(GDTG_STAFF_ROLE_ID) || 
                             member.roles.cache.has(SELLER_ROLE_ID) ||
-                            member.roles.cache.has(OWNER_ROLE_ID) || 
+                            member.roles.cache.has(HOANG_DE_ROLE_ID) || 
                             member.roles.cache.has(MANAGER_ROLE_ID) || 
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
@@ -796,7 +664,7 @@ client.on('interactionCreate', async (interaction) => {
                 permissionOverwrites: [
                     { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
                     { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: OWNER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
+                    { id: HOANG_DE_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                     { id: GDTG_STAFF_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                     { id: MANAGER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                 ],
@@ -819,8 +687,11 @@ client.on('interactionCreate', async (interaction) => {
                 new ButtonBuilder().setCustomId('close_ticket').setLabel('Đóng Ticket').setStyle(ButtonStyle.Danger).setEmoji('🔒')
             );
 
+            // --- PING TICKET GDTG ---
+            const gdtgPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> | <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> | <@&${TU_DAI_THIEN_VUONG_ROLE_ID}> | <@&${THUONG_GIA_THIEN_HA_ROLE_ID}> | <@&${GDTG_STAFF_ROLE_ID}>`;
+
             const sentMsg = await channel.send({ 
-                content: `<@${user.id}> | <@&${OWNER_ROLE_ID}> | <@&${GDTG_STAFF_ROLE_ID}>`, 
+                content: gdtgPingContent, 
                 embeds: [embed], 
                 components: [row1, row2] 
             });
@@ -858,7 +729,7 @@ client.on('interactionCreate', async (interaction) => {
                     { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
                     { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                     { id: SELLER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: OWNER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
+                    { id: HOANG_DE_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                     { id: MANAGER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                 ],
             });
@@ -880,8 +751,11 @@ client.on('interactionCreate', async (interaction) => {
                 new ButtonBuilder().setCustomId('close_ticket').setLabel('Đóng Ticket').setStyle(ButtonStyle.Danger).setEmoji('🔒')
             );
 
+            // --- PING TICKET MUA HÀNG ---
+            const buyPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> | <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> | <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+
             const sentMsg = await channel.send({ 
-                content: `<@${user.id}> | <@&${SELLER_ROLE_ID}> | <@&${OWNER_ROLE_ID}>`, 
+                content: buyPingContent, 
                 embeds: [embed], 
                 components: [row1, row2] 
             });
@@ -918,7 +792,7 @@ client.on('interactionCreate', async (interaction) => {
                 permissionOverwrites: [
                     { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
                     { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: OWNER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
+                    { id: HOANG_DE_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                     { id: MANAGER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                 ],
             });
@@ -935,7 +809,7 @@ client.on('interactionCreate', async (interaction) => {
 
             client.channels.fetch(ADMIN_REPORT_CHANNEL_ID).then(ownerChannel => {
                 if (ownerChannel) {
-                    ownerChannel.send({ content: `<@&${OWNER_ROLE_ID}> Có report lừa đảo / sự cố khẩn cấp mới từ khách hàng!`, embeds: [reportEmbed] });
+                    ownerChannel.send({ content: `<@&${HOANG_DE_ROLE_ID}> Có report lừa đảo / sự cố khẩn cấp mới từ khách hàng!`, embeds: [reportEmbed] });
                 }
             }).catch(err => {
                 console.error('Không thể gửi log báo cáo đến kênh quản lý:', err);
@@ -945,8 +819,11 @@ client.on('interactionCreate', async (interaction) => {
                 new ButtonBuilder().setCustomId('close_instant').setLabel('Đóng Ngay Kênh Report').setStyle(ButtonStyle.Danger).setEmoji('🚪')
             );
 
+            // --- PING TICKET REPORT ---
+            const reportPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> | <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> | <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+
             await channel.send({ 
-                content: `<@${user.id}> | <@&${OWNER_ROLE_ID}>`, 
+                content: reportPingContent, 
                 embeds: [reportEmbed], 
                 components: [row] 
             });
@@ -966,27 +843,27 @@ client.on('interactionCreate', async (interaction) => {
             const data = ticketData[channel.id] || { opener: 'Không rõ', claimers: [], dealInfo: 'Không có thông tin' };
 
             if (data.claimers && data.claimers.length > 0) {
-    data.claimers.forEach(staffId => {
-        if (!staffStats[staffId]) {
-            staffStats[staffId] = { completedDeals: 0, totalStars: 0, ratingCount: 0 };
-        }
-        staffStats[staffId].completedDeals += 1;
-        staffStats[staffId].totalStars += stars;
-        staffStats[staffId].ratingCount += 1;
+                data.claimers.forEach(staffId => {
+                    if (!staffStats[staffId]) {
+                        staffStats[staffId] = { completedDeals: 0, totalStars: 0, ratingCount: 0 };
+                    }
+                    staffStats[staffId].completedDeals += 1;
+                    staffStats[staffId].totalStars += stars;
+                    staffStats[staffId].ratingCount += 1;
 
-        // Đồng bộ sang biến đếm đơn lẻ nếu cần dùng hiển thị
-        staffRatings[staffId] = staffStats[staffId].completedDeals;
-    });
-}
+                    staffRatings[staffId] = staffStats[staffId].completedDeals;
+                });
+            }
 
-let claimersText = data.claimers && data.claimers.length > 0 
-    ? data.claimers.map(id => `<@${id}>`).join(', ') 
-    : 'Chưa có';
+            let claimersText = data.claimers && data.claimers.length > 0 
+                ? data.claimers.map(id => `<@${id}>`).join(', ') 
+                : 'Chưa có';
 
-let staffIdForVouch = (data.claimers && data.claimers.length > 0) ? data.claimers[0] : null;
-let totalVouchText = staffIdForVouch 
-    ? `<@${staffIdForVouch}>: **${staffStats[staffIdForVouch] ? staffStats[staffIdForVouch].completedDeals : 1}** vouch` 
-    : 'Không có';
+            let staffIdForVouch = (data.claimers && data.claimers.length > 0) ? data.claimers[0] : null;
+            let totalVouchText = staffIdForVouch 
+                ? `<@${staffIdForVouch}>: **${staffStats[staffIdForVouch] ? staffStats[staffIdForVouch].completedDeals : 1}** vouch` 
+                : 'Không có';
+
             await interaction.reply({ content: `🎉 Cảm ơn bạn đã gửi đánh giá dịch vụ GDTG! Kênh ticket sẽ tự động lưu file html và đóng sau vài giây...`, ephemeral: false });
 
             try {
