@@ -260,14 +260,10 @@ client.on('messageCreate', async message => {
         return message.reply({ embeds: [checkEmbed] });
     }
 
-  client.on('messageCreate', async message => {
-  if (message.author.bot) return; // Bỏ qua bot
+
   
   // Kiểm tra đúng lệnh bạn muốn
   if (message.content === '!setup-ticket' || message.content === '!setup') {
-    // Code gửi embed / panel ở đây
-  }
-});
         const embed = new EmbedBuilder()
             .setTitle('🎫 HỆ THỐNG TICKET DỊCH VỤ & HỖ TRỢ TRUNG TÂM')
             .setDescription(`>>> 🛡️ **TRUNG TÂM GIAO DỊCH & HỖ TRỢ AN TOÀN 24/7** 🛡️
@@ -289,8 +285,6 @@ client.on('messageCreate', async message => {
         await message.channel.send({ embeds: [embed], components: [row] });
         return message.delete().catch(() => {});
     }
-
-});
 
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
