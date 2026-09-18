@@ -262,17 +262,16 @@ client.on('messageCreate', async message => {
 
     if (message.content === '!setup-ticket' || message.content === '!setup') {
         const embed = new EmbedBuilder()
-            .setTitle('🎫 HỆ THỐNG TICKET DỊCH VỤ & HỖ TRỢ TRUNG TÂM')
-            .setDescription(`>>> Bạn cần gdtg hãy mở ticket ở đây
-:verify~3: Bạn cần mua bán
-:verify~3: Nếu bạn có vấn đề thắc mắc cần giải đáp
-:verify~3: Bn cần GDTG (game,var,all)
-Vui lòng tạo ticket
+            .setTitle('🎫 # Bạn cần gdtg hãy mở ticket ở đây')
+            .setDescription(`>>> Bạn cần mua bán
+           Nếu bạn có vấn đề thắc mắc cần giải đáp
+           Bn cần GDTG (game,var,all)
+           Vui lòng tạo ticket
 
-:chamthang~2: XIN LƯU Ý
-:chamthang~2: Hãy nói rõ mặt hàng bạn cần mua/hỗ trợ sau khi tạo ticket
-:chamthang~2: Vui lòng không tạo ticket nếu bạn không có nhu cầu/ vấn đề gì cần giúp đỡ
-:chamthang~2: Không ping quá nhiều khi đã tạo ticket`)
+              XIN LƯU Ý
+              Hãy nói rõ mặt hàng bạn cần mua/hỗ trợ sau khi tạo ticket
+              Vui lòng không tạo ticket nếu bạn không có nhu cầu/ vấn đề gì cần giúp đỡ
+              Không ping quá nhiều khi đã tạo ticket`)
             .setColor('#0099ff')
             .setFooter({ text: 'Hệ thống tự động quản lý ticket' });
 
