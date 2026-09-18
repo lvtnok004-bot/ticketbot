@@ -706,7 +706,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET GDTG ---
-            const gdtgPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> \vert{} <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> \vert{} <@&${TU_DAI_THIEN_VUONG_ROLE_ID}> | <@&${THUONG_GIA_THIEN_HA_ROLE_ID}> \vert{} <@&${GDTG_STAFF_ROLE_ID}>`;
+            const gdtgPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> - <@&${TU_DAI_THIEN_VUONG_ROLE_ID}> - <@&${THUONG_GIA_THIEN_HA_ROLE_ID}> - <@&${GDTG_STAFF_ROLE_ID}>`;
 
             const sentMsg = await channel.send({ 
                 content: gdtgPingContent, 
@@ -767,7 +767,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET MUA HÀNG ---
-            const buyPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> \vert{} <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> \vert{} <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+            const buyPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> - <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
 
             const sentMsg = await channel.send({ 
                 content: buyPingContent, 
@@ -833,7 +833,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET REPORT ---
-            const reportPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> | <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> | <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+            const reportPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> - <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
 
             await channel.send({ 
                 content: reportPingContent, 
