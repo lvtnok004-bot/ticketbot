@@ -263,13 +263,16 @@ client.on('messageCreate', async message => {
     if (message.content === '!setup-ticket' || message.content === '!setup') {
         const embed = new EmbedBuilder()
             .setTitle('🎫 HỆ THỐNG TICKET DỊCH VỤ & HỖ TRỢ TRUNG TÂM')
-            .setDescription(`>>> 🛡️ **TRUNG TÂM GIAO DỊCH & HỖ TRỢ AN TOÀN 24/7** 🛡️
+            .setDescription(`>>> Bạn cần gdtg hãy mở ticket ở đây
+:verify~3: Bạn cần mua bán
+:verify~3: Nếu bạn có vấn đề thắc mắc cần giải đáp
+:verify~3: Bn cần GDTG (game,var,all)
+Vui lòng tạo ticket
 
-• 📌 **Tạo Ticket GDTG:** Dùng cho trung gian giao dịch tài sản, hiện vật, tài khoản an toàn tuyệt đối.
-• 🛒 **Mua Hàng:** Mua sắm các sản phẩm, dịch vụ trực tiếp từ shop hoặc seller uy tín.
-• 🚨 **Report Scammer:** Tố cáo lừa đảo, khiếu nại khẩn cấp gửi trực tiếp đến Ban Quản Trị.
-
-✨ *Cam kết uy tín - Minh bạch - Bảo mật tuyệt đối cho mọi khách hàng!*`)
+:chamthang~2: XIN LƯU Ý
+:chamthang~2: Hãy nói rõ mặt hàng bạn cần mua/hỗ trợ sau khi tạo ticket
+:chamthang~2: Vui lòng không tạo ticket nếu bạn không có nhu cầu/ vấn đề gì cần giúp đỡ
+:chamthang~2: Không ping quá nhiều khi đã tạo ticket`)
             .setColor('#0099ff')
             .setFooter({ text: 'Hệ thống tự động quản lý ticket' });
 
@@ -659,7 +662,7 @@ client.on('interactionCreate', async (interaction) => {
             const channel = await guild.channels.create({
                 name: `gdtg-${user.username}`,
                 type: ChannelType.GuildText,
-                parent: '1437994731635216434',
+                parent: '1520449019120451724',
                 permissionOverwrites: [
                     { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
                     { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
