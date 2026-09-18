@@ -10,7 +10,8 @@ const {
     EmbedBuilder,
     ModalBuilder,
     TextInputBuilder,
-    TextInputStyle
+    TextInputStyle,
+    MessageFlags
 } = require('discord.js');
 
 // THÊM THƯ VIỆN XUẤT TRANSCRIPT HTML
@@ -20,7 +21,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent, // Bắt buộc có dòng này
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -97,6 +98,25 @@ async function saveAndSendTranscript(channel, closedByUser) {
     }
 }
 
+// --- HÀM TẠO QUYỀN TRUY CẬP KÊNH AN TOÀN ---
+function buildPermissionOverwrites(guild, userId, roleIds) {
+    const overwrites = [
+        { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+        { id: userId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
+    ];
+
+    roleIds.forEach(roleId => {
+        if (guild.roles.cache.has(roleId)) {
+            overwrites.push({
+                id: roleId,
+                allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages]
+            });
+        }
+    });
+
+    return overwrites;
+}
+
 client.on('clientReady', () => {
     console.log(`Bot Discord đã khởi động thành công với tên: ${client.user.tag}`);
 });
@@ -111,7 +131,7 @@ client.on('messageCreate', async message => {
                         member.permissions.has(PermissionsBitField.Flags.Administrator);
         
         if (!isStaff) {
-            return message.reply({ content: '❌ Bạn không có quyền sử dụng lệnh thống kê này!', ephemeral: true });
+            return message.reply({ content: '❌ Bạn không có quyền sử dụng lệnh thống kê này!', flags: [MessageFlags.Ephemeral] });
         }
 
         const startOfToday = new Date();
@@ -207,7 +227,7 @@ client.on('messageCreate', async message => {
                         member.permissions.has(PermissionsBitField.Flags.Administrator);
         
         if (!isStaff) {
-            return message.reply({ content: '❌ Bạn không có quyền sử dụng lệnh quản lý tiền cọc này!', ephemeral: true });
+            return message.reply({ content: '❌ Bạn không có quyền sử dụng lệnh quản lý tiền cọc này!', flags: [MessageFlags.Ephemeral] });
         }
 
         const args = message.content.split(' ').slice(1);
@@ -337,7 +357,7 @@ client.on('interactionCreate', async (interaction) => {
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
             if (!isStaff) {
-                return interaction.reply({ content: '❌ Chỉ có Nhân viên GDTG, Seller hoặc Quản trị viên mới có thể nhận ticket này!', ephemeral: true });
+                return interaction.reply({ content: '❌ Chỉ có Nhân viên GDTG, Seller hoặc Quản trị viên mới có thể nhận ticket này!', flags: [MessageFlags.Ephemeral] });
             }
 
             const channel = interaction.channel;
@@ -352,10 +372,10 @@ client.on('interactionCreate', async (interaction) => {
                 if (currentClaimerId !== staff.id) {
                     return interaction.reply({ 
                         content: `❌ Ticket này hiện đang được phụ trách bởi <@${currentClaimerId}> rồi! Bạn không thể nhận đè trừ khi nhân viên đó bấm hủy hoặc chuyển giao.`, 
-                        ephemeral: true 
+                        flags: [MessageFlags.Ephemeral] 
                     });
                 } else {
-                    return interaction.reply({ content: `⚠️ Bạn đã là người tiếp nhận ticket này từ trước rồi!`, ephemeral: true });
+                    return interaction.reply({ content: `⚠️ Bạn đã là người tiếp nhận ticket này từ trước rồi!`, flags: [MessageFlags.Ephemeral] });
                 }
             }
 
@@ -374,7 +394,7 @@ client.on('interactionCreate', async (interaction) => {
 
             await channel.send({ content: `📢 Nhân viên <@${staff.id}> đã tiếp nhận xử lý ticket này!` });
 
-            return interaction.reply({ content: `✅ Bạn đã chính thức tiếp nhận ticket này!`, ephemeral: true });
+            return interaction.reply({ content: `✅ Bạn đã chính thức tiếp nhận ticket này!`, flags: [MessageFlags.Ephemeral] });
         }
 
         if (interaction.customId === 'unclaim_ticket') {
@@ -382,7 +402,7 @@ client.on('interactionCreate', async (interaction) => {
             const staff = interaction.user;
 
             if (!ticketData[channel.id] || !ticketData[channel.id].claimers || !ticketData[channel.id].claimers.includes(staff.id)) {
-                return interaction.reply({ content: '❌ Bạn chưa nhận ticket này nên không thể hủy nhận!', ephemeral: true });
+                return interaction.reply({ content: '❌ Bạn chưa nhận ticket này nên không thể hủy nhận!', flags: [MessageFlags.Ephemeral] });
             }
 
             ticketData[channel.id].claimers = [];
@@ -400,7 +420,7 @@ client.on('interactionCreate', async (interaction) => {
 
             await channel.send({ content: `⚠️ Nhân viên <@${staff.id}> đã hủy tiếp nhận ticket này. Ticket đang ở trạng thái chờ nhân viên khác.` });
 
-            return interaction.reply({ content: `🔄 Bạn đã hủy tiếp nhận ticket này thành công!`, ephemeral: true });
+            return interaction.reply({ content: `🔄 Bạn đã hủy tiếp nhận ticket này thành công!`, flags: [MessageFlags.Ephemeral] });
         }
 
         if (interaction.customId === 'transfer_ticket') {
@@ -408,7 +428,7 @@ client.on('interactionCreate', async (interaction) => {
             const staff = interaction.user;
 
             if (!ticketData[channel.id] || !ticketData[channel.id].claimers || !ticketData[channel.id].claimers.includes(staff.id)) {
-                return interaction.reply({ content: '❌ Bạn phải là người đang nhận ticket này mới có thể chuyển cho người khác!', ephemeral: true });
+                return interaction.reply({ content: '❌ Bạn phải là người đang nhận ticket này mới có thể chuyển cho người khác!', flags: [MessageFlags.Ephemeral] });
             }
 
             const modal = new ModalBuilder()
@@ -435,7 +455,7 @@ client.on('interactionCreate', async (interaction) => {
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
             if (!isStaff) {
-                return interaction.reply({ content: '❌ Chỉ có Nhân viên GDTG, Seller hoặc Quản trị viên mới có quyền thêm người vào ticket!', ephemeral: true });
+                return interaction.reply({ content: '❌ Chỉ có Nhân viên GDTG, Seller hoặc Quản trị viên mới có quyền thêm người vào ticket!', flags: [MessageFlags.Ephemeral] });
             }
 
             const modal = new ModalBuilder()
@@ -465,7 +485,7 @@ client.on('interactionCreate', async (interaction) => {
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
             if (!isStaff) {
-                return interaction.reply({ content: '❌ Chỉ có nhân viên mới có quyền bấm nút đóng vé này!', ephemeral: true });
+                return interaction.reply({ content: '❌ Chỉ có nhân viên mới có quyền bấm nút đóng vé này!', flags: [MessageFlags.Ephemeral] });
             }
 
             const optionsEmbed = new EmbedBuilder()
@@ -477,13 +497,13 @@ client.on('interactionCreate', async (interaction) => {
                 new ButtonBuilder().setCustomId('close_instant').setLabel('Đóng Ngay Lập Tức').setStyle(ButtonStyle.Danger).setEmoji('🚪'),
                 new ButtonBuilder().setCustomId(data.type === 'buy' ? 'open_buy_rating' : 'open_rating_panel').setLabel('Đánh Giá Dịch Vụ').setStyle(ButtonStyle.Success).setEmoji('⭐')
             );
-            return interaction.reply({ embeds: [optionsEmbed], components: [optionsRow], ephemeral: true });
+            return interaction.reply({ embeds: [optionsEmbed], components: [optionsRow], flags: [MessageFlags.Ephemeral] });
         }
 
         if (interaction.customId === 'close_instant') {
             const channel = interaction.channel;
             
-            await interaction.reply({ content: '🚪 Đang tiến hành lưu transcript và đóng vé ngay lập tức...', ephemeral: true });
+            await interaction.reply({ content: '🚪 Đang tiến hành lưu transcript và đóng vé ngay lập tức...', flags: [MessageFlags.Ephemeral] });
             
             await saveAndSendTranscript(channel, interaction.user);
 
@@ -539,7 +559,7 @@ client.on('interactionCreate', async (interaction) => {
 
             const isOpener = data.openerId ? userId === data.openerId : userId === channel.permissionOverwrites.cache.find(p => p.type === 1)?.id;
             if (!isOpener) {
-                return interaction.reply({ content: '❌ Chỉ có người mở ticket mới có quyền bấm chọn số sao đánh giá!', ephemeral: true });
+                return interaction.reply({ content: '❌ Chỉ có người mở ticket mới có quyền bấm chọn số sao đánh giá!', flags: [MessageFlags.Ephemeral] });
             }
 
             const stars = interaction.customId.split('_')[2];
@@ -559,7 +579,7 @@ client.on('interactionCreate', async (interaction) => {
 
             const isOpener = data.openerId ? userId === data.openerId : userId === channel.permissionOverwrites.cache.find(p => p.type === 1)?.id;
             if (!isOpener) {
-                return interaction.reply({ content: '❌ Chỉ có người mở ticket mới có quyền bấm chọn số sao đánh giá!', ephemeral: true });
+                return interaction.reply({ content: '❌ Chỉ có người mở ticket mới có quyền bấm chọn số sao đánh giá!', flags: [MessageFlags.Ephemeral] });
             }
 
             const stars = interaction.customId.split('_')[2];
@@ -591,7 +611,7 @@ client.on('interactionCreate', async (interaction) => {
                 }
                 
                 if (!targetMember) {
-                    return interaction.reply({ content: `❌ Không tìm thấy thành viên **"${rawInput}"** trong Server! Vui lòng thử dùng ID chính xác.`, ephemeral: true });
+                    return interaction.reply({ content: `❌ Không tìm thấy thành viên **"${rawInput}"** trong Server! Vui lòng thử dùng ID chính xác.`, flags: [MessageFlags.Ephemeral] });
                 }
 
                 await channel.permissionOverwrites.create(targetMember, {
@@ -603,7 +623,7 @@ client.on('interactionCreate', async (interaction) => {
                 return interaction.reply({ content: `✅ Đã thêm thành công ${targetMember} vào ticket này!`, ephemeral: false });
             } catch (err) {
                 console.error(err);
-                return interaction.reply({ content: '❌ Có lỗi xảy ra khi tìm thành viên, vui lòng kiểm tra lại thông tin!', ephemeral: true });
+                return interaction.reply({ content: '❌ Có lỗi xảy ra khi tìm thành viên, vui lòng kiểm tra lại thông tin!', flags: [MessageFlags.Ephemeral] });
             }
         }
 
@@ -627,7 +647,7 @@ client.on('interactionCreate', async (interaction) => {
             }
 
             if (!newStaffMember) {
-                return interaction.reply({ content: `❌ Không tìm thấy nhân viên **"${rawInput}"** trong server! Vui nhập đúng ID hoặc tag tên.`, ephemeral: true });
+                return interaction.reply({ content: `❌ Không tìm thấy nhân viên **"${rawInput}"** trong server! Vui nhập đúng ID hoặc tag tên.`, flags: [MessageFlags.Ephemeral] });
             }
 
             if (!ticketData[channel.id]) ticketData[channel.id] = { claimers: [] };
@@ -656,19 +676,16 @@ client.on('interactionCreate', async (interaction) => {
             const dealPerson = interaction.fields.getTextInputValue('deal_person');
             const dealItem = interaction.fields.getTextInputValue('deal_item');
 
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
+            const targetRoles = [HOANG_DE_ROLE_ID, GDTG_STAFF_ROLE_ID, MANAGER_ROLE_ID];
+            const permissionOverwrites = buildPermissionOverwrites(guild, user.id, targetRoles);
 
             const channel = await guild.channels.create({
                 name: `gdtg-${user.username}`,
                 type: ChannelType.GuildText,
                 parent: '1520449019120451724',
-                permissionOverwrites: [
-                    { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-                    { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: HOANG_DE_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: GDTG_STAFF_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: MANAGER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                ],
+                permissionOverwrites: permissionOverwrites,
             });
 
             const embed = createTicketEmbed({
@@ -720,19 +737,16 @@ client.on('interactionCreate', async (interaction) => {
             const buyItem = interaction.fields.getTextInputValue('buy_item');
             const buyNote = interaction.fields.getTextInputValue('buy_note') || 'Không có ghi chú';
 
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
+            const targetRoles = [SELLER_ROLE_ID, HOANG_DE_ROLE_ID, MANAGER_ROLE_ID];
+            const permissionOverwrites = buildPermissionOverwrites(guild, user.id, targetRoles);
 
             const channel = await guild.channels.create({
                 name: `muahang-${user.username}`,
                 type: ChannelType.GuildText,
                 parent: '1437994731635216434',
-                permissionOverwrites: [
-                    { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-                    { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: SELLER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: HOANG_DE_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: MANAGER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                ],
+                permissionOverwrites: permissionOverwrites,
             });
 
             const embed = createTicketEmbed({
@@ -784,18 +798,16 @@ client.on('interactionCreate', async (interaction) => {
             const scammerName = interaction.fields.getTextInputValue('scammer_name');
             const scammerProof = interaction.fields.getTextInputValue('scammer_proof');
 
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
+            const targetRoles = [HOANG_DE_ROLE_ID, MANAGER_ROLE_ID];
+            const permissionOverwrites = buildPermissionOverwrites(guild, user.id, targetRoles);
 
             const channel = await guild.channels.create({
                 name: `report-${user.username}`,
                 type: ChannelType.GuildText,
                 parent: '1437994731635216434',
-                permissionOverwrites: [
-                    { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-                    { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: HOANG_DE_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                    { id: MANAGER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-                ],
+                permissionOverwrites: permissionOverwrites,
             });
 
             const reportEmbed = new EmbedBuilder()
