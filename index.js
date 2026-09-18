@@ -260,10 +260,7 @@ client.on('messageCreate', async message => {
         return message.reply({ embeds: [checkEmbed] });
     }
 
-
-  
-  // Kiểm tra đúng lệnh bạn muốn
-  if (message.content === '!setup-ticket' || message.content === '!setup') {
+    if (message.content === '!setup-ticket' || message.content === '!setup') {
         const embed = new EmbedBuilder()
             .setTitle('🎫 HỆ THỐNG TICKET DỊCH VỤ & HỖ TRỢ TRUNG TÂM')
             .setDescription(`>>> 🛡️ **TRUNG TÂM GIAO DỊCH & HỖ TRỢ AN TOÀN 24/7** 🛡️
@@ -285,6 +282,7 @@ client.on('messageCreate', async message => {
         await message.channel.send({ embeds: [embed], components: [row] });
         return message.delete().catch(() => {});
     }
+});
 
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
@@ -689,7 +687,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET GDTG ---
-            const gdtgPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> | <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> | <@&${TU_DAI_THIEN_VUONG_ROLE_ID}> | <@&${THUONG_GIA_THIEN_HA_ROLE_ID}> | <@&${GDTG_STAFF_ROLE_ID}>`;
+            const gdtgPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> \vert{} <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> \vert{} <@&${TU_DAI_THIEN_VUONG_ROLE_ID}> | <@&${THUONG_GIA_THIEN_HA_ROLE_ID}> \vert{} <@&${GDTG_STAFF_ROLE_ID}>`;
 
             const sentMsg = await channel.send({ 
                 content: gdtgPingContent, 
@@ -753,7 +751,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET MUA HÀNG ---
-            const buyPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> | <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> | <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+            const buyPingContent = `<@${user.id}> | <@&${HOANG_DE_ROLE_ID}> \vert{} <@&${CHU_DE_CHE_ROLE_ID}> | <@&${CHU_HE_MAT_TROI_ROLE_ID}> \vert{} <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
 
             const sentMsg = await channel.send({ 
                 content: buyPingContent, 
@@ -950,4 +948,5 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 });
+
 client.login(process.env.DISCORD_TOKEN);
