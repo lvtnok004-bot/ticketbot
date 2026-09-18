@@ -950,4 +950,4 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 });
-client.login(process.env.DISCORD_TOKEN);F
+client.login(process.env.DISCORD_TOKEN);
