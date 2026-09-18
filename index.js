@@ -16,24 +16,12 @@ const {
 // THÊM THƯ VIỆN XUẤT TRANSCRIPT HTML
 const discordTranscripts = require('discord-html-transcripts');
 
-const { Client, GatewayIntentBits } = require('discord.js');
-
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent, // Bắt buộc có dòng này
   ],
-});
-
-client.on('messageCreate', async (message) => {
-  // Bỏ qua tin nhắn từ bot hoặc tin nhắn riêng (DM)
-  if (message.author.bot || !message.guild) return;
-
-  // Lệnh setup
-  if (message.content === '!setup-ticket') {
-    await message.channel.send('Đã nhận lệnh setup!');
-  }
 });
 
 // --- CẤU HÌNH ID KÊNH & ROLE HỆ THỐNG ---
@@ -109,9 +97,9 @@ async function saveAndSendTranscript(channel, closedByUser) {
     }
 }
 
-client.on('ready', () => { ... })
+client.on('clientReady', () => {
     console.log(`Bot Discord đã khởi động thành công với tên: ${client.user.tag}`);
-;
+});
 
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
