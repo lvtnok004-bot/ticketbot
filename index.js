@@ -32,7 +32,7 @@ const TRANSCRIPT_LOG_CHANNEL_ID = '1548609339097481296'; // Kênh gửi transcri
 
 // --- CẤU HÌNH ID ROLE ---
 const HOANG_DE_ROLE_ID = '1456863702677459088';          // Role Hoàng Đế Thiên Hà (Owner)
-const CHU_DE_CHE_ROLE_ID = '1548618704080736356';        // Role Chủ Đế Chế
+const CHU_DE_CHE_ROLE_ID = '1550861995723595908';        // Role Chủ Đế Chế
 const CHU_HE_MAT_TROI_ROLE_ID = '1548931132765114426';    // Role Chủ Hệ Mặt Trời
 const TU_DAI_THIEN_VUONG_ROLE_ID = '1548930031550730371'; // Role Tứ Đại Thiên Vương
 const THUONG_GIA_THIEN_HA_ROLE_ID = '1508249314781040770';// Role Thương Gia
