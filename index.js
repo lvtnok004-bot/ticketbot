@@ -745,7 +745,7 @@ client.on('interactionCreate', async (interaction) => {
             const channel = await guild.channels.create({
                 name: `muahang-${user.username}`,
                 type: ChannelType.GuildText,
-                parent: '1520449019120451724',
+                parent: '1551254537220661379',
                 permissionOverwrites: permissionOverwrites,
             });
 
