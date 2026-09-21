@@ -26,9 +26,9 @@ const client = new Client({
 });
 
 // --- CẤU HÌNH ID KÊNH & ROLE HỆ THỐNG ---
-const VOUCH_LOG_CHANNEL_ID = '1548557918977138779';       // Kênh bot gửi vouch
+const VOUCH_LOG_CHANNEL_ID = '1551255092580323429';       // Kênh bot gửi vouch
 const ADMIN_REPORT_CHANNEL_ID = '1537333911095611443';    // Kênh nhận log Report Scammer
-const TRANSCRIPT_LOG_CHANNEL_ID = '1548609339097481296'; // Kênh gửi transcript
+const TRANSCRIPT_LOG_CHANNEL_ID = '1551449974657650728'; // Kênh gửi transcript
 
 // --- CẤU HÌNH ID ROLE ---
 const HOANG_DE_ROLE_ID = '1456863702677459088';          // Role Hoàng Đế Thiên Hà (Owner)
