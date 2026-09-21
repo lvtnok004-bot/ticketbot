@@ -37,6 +37,8 @@ const CHU_HE_MAT_TROI_ROLE_ID = '1548931132765114426';    // Role Chủ Hệ M�
 const TU_DAI_THIEN_VUONG_ROLE_ID = '1548930031550730371'; // Role Tứ Đại Thiên Vương
 const THUONG_GIA_THIEN_HA_ROLE_ID = '1508249314781040770';// Role Thương Gia
 const GDTG_STAFF_ROLE_ID = '1550121929162236034';         // Role Nhân viên GDTG
+const BMIH_ID = '1548618704080736356'; 
+const NKOX_ID = '1551458292419797063';
 
 const MANAGER_ROLE_ID = '1437440890011521105';          // Role Manager (nếu dùng)
 const SELLER_ROLE_ID = '1441449735192838245';            // Role Seller (nếu dùng)
@@ -706,7 +708,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET GDTG ---
-            const gdtgPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> - <@&${TU_DAI_THIEN_VUONG_ROLE_ID}> - <@&${THUONG_GIA_THIEN_HA_ROLE_ID}> - <@&${GDTG_STAFF_ROLE_ID}>`;
+            const gdtgPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${GDTG_STAFF_ROLE_ID}> `;
 
             const sentMsg = await channel.send({ 
                 content: gdtgPingContent, 
@@ -767,7 +769,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET MUA HÀNG ---
-            const buyPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> - <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+            const buyPingContent = `<@${user.id}> - <@&${NKOX_ID}> - <@&${BMIH_ID}> `;
 
             const sentMsg = await channel.send({ 
                 content: buyPingContent, 
@@ -833,7 +835,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET REPORT ---
-            const reportPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> - <@&${TU_DAI_THIEN_VUONG_ROLE_ID}>`;
+            const reportPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> `;
 
             await channel.send({ 
                 content: reportPingContent, 
