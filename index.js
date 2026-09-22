@@ -29,19 +29,20 @@ const client = new Client({
 const VOUCH_LOG_CHANNEL_ID = '1551255092580323429';       // Kênh bot gửi vouch
 const ADMIN_REPORT_CHANNEL_ID = '1537333911095611443';    // Kênh nhận log Report Scammer
 const TRANSCRIPT_LOG_CHANNEL_ID = '1551449974657650728'; // Kênh gửi transcript
+const PARENT_CATEGORY_ID = '1551254537220661379';        // ID Danh mục chứa Ticket
 
 // --- CẤU HÌNH ID ROLE ---
 const HOANG_DE_ROLE_ID = '1456863702677459088';          // Role Hoàng Đế Thiên Hà (Owner)
-const CHU_DE_CHE_ROLE_ID = '1550861995723595908';        // Role Chủ Đế Chế
-const CHU_HE_MAT_TROI_ROLE_ID = '1548931132765114426';    // Role Chủ Hệ Mặt Trời
+const CHU_DE_CHE_ROLE_ID = '1550861995723595908';        // Role Chủ Đế Chế (Co Owner)
+const CHU_HE_MAT_TROI_ROLE_ID = '1548931132765114426';    // Role Chủ Hệ Mặt Trời (Co Owner 2)
 const TU_DAI_THIEN_VUONG_ROLE_ID = '1548930031550730371'; // Role Tứ Đại Thiên Vương
 const THUONG_GIA_THIEN_HA_ROLE_ID = '1508249314781040770';// Role Thương Gia
 const GDTG_STAFF_ROLE_ID = '1550121929162236034';         // Role Nhân viên GDTG
 const BMIH_ID = '1548618704080736356'; 
 const NKOX_ID = '1551458292419797063';
 
-const MANAGER_ROLE_ID = '1437440890011521105';          // Role Manager (nếu dùng)
-const SELLER_ROLE_ID = '1441449735192838245';            // Role Seller (nếu dùng)
+const MANAGER_ROLE_ID = '1437440890011521105';          // Role Manager
+const SELLER_ROLE_ID = '1441449735192838245';            // Role Seller
 
 // --- BỘ NHỚ LƯU TRỮ TẠM THỜI (DATABASE IN-MEMORY) ---
 const ticketData = {};
@@ -56,16 +57,28 @@ function createTicketEmbed(data) {
         ? `<@${data.claimers[0]}>` 
         : '⚡ *Chưa có ai nhận (Đang chờ)*';
 
+    let title = '🎫 KÊNH TICKET GIAO DỊCH TRUNG GIAN (GDTG)';
+    let desc = 'Vui lòng đợi nhân viên GDTG vào tiếp nhận thông tin và hướng dẫn giao dịch an toàn.';
+    let color = '#0099ff';
+
+    if (data.type === 'buy') {
+        title = '🛒 KÊNH TICKET MUA HÀNG / DỊCH VỤ';
+        desc = 'Cảm ơn bạn đã ủng hộ shop. Seller sẽ phản hồi và hỗ trợ bạn ngay lập tức!';
+        color = '#00ffcc';
+    } else if (data.type === 'partner') {
+        title = '🤝 KÊNH TICKET PARTNER SERVER';
+        desc = 'Cảm ơn bạn đã quan tâm hợp tác! Vui lòng chờ Owner và Co-Owner trao đổi thông tin.';
+        color = '#9b59b6';
+    }
+
     const embed = new EmbedBuilder()
-        .setTitle(data.type === 'buy' ? '🛒 KÊNH TICKET MUA HÀNG / DỊCH VỤ' : '🎫 KÊNH TICKET GIAO DỊCH TRUNG GIAN (GDTG)')
-        .setDescription(data.type === 'buy' 
-            ? 'Cảm ơn bạn đã ủng hộ shop. Seller sẽ phản hồi và hỗ trợ bạn ngay lập tức!' 
-            : 'Vui lòng đợi nhân viên GDTG vào tiếp nhận thông tin và hướng dẫn giao dịch an toàn.')
+        .setTitle(title)
+        .setDescription(desc)
         .addFields(
             { name: '📋 Chi tiết / Thông tin', value: data.dealInfo },
             { name: '🙋‍♂️ Nhân viên phụ trách', value: staffText, inline: false }
         )
-        .setColor(data.type === 'buy' ? '#00ffcc' : '#0099ff')
+        .setColor(color)
         .setTimestamp();
 
     return embed;
@@ -284,23 +297,22 @@ client.on('messageCreate', async message => {
 
     if (message.content === '!setup-ticket' || message.content === '!setup') {
         const embed = new EmbedBuilder()
-            .setTitle('🎫 # Bạn cần gdtg hãy mở ticket ở đây')
-            .setDescription(`>>> Bạn cần mua bán
-           Nếu bạn có vấn đề thắc mắc cần giải đáp
-           Bn cần GDTG (game,var,all)
-           Vui lòng tạo ticket
-
-              XIN LƯU Ý
-              Hãy nói rõ mặt hàng bạn cần mua/hỗ trợ sau khi tạo ticket
-              Vui lòng không tạo ticket nếu bạn không có nhu cầu/ vấn đề gì cần giúp đỡ
-              Không ping quá nhiều khi đã tạo ticket`)
+            .setTitle('🎫 Bạn cần hỗ trợ hoặc hợp tác hãy mở ticket ở đây')
+            .setDescription(`>>> **XIN LƯU Ý HƯỚNG DẪN:**
+           • **Tạo Ticket GDTG:** Giao dịch trung gian an toàn (Game, VAR, All...)
+           • **Mua Hàng:** Đặt mua các sản phẩm / dịch vụ của Shop
+           • **Report Scammer:** Tố cáo lừa đảo, khiếu nại khẩn cấp
+           • **Partner Server:** Đăng ký hợp tác, giao lưu giữa các Server
+           
+           *Lưu ý: Nói rõ nhu cầu sau khi tạo ticket và không ping quá nhiều!*`)
             .setColor('#0099ff')
             .setFooter({ text: 'Hệ thống tự động quản lý ticket' });
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('create_gdtg_ticket').setLabel('Tạo Ticket GDTG').setStyle(ButtonStyle.Primary).setEmoji('📩'),
             new ButtonBuilder().setCustomId('create_buy_ticket').setLabel('Mua Hàng').setStyle(ButtonStyle.Success).setEmoji('🛒'),
-            new ButtonBuilder().setCustomId('create_report_ticket').setLabel('Report Scammer').setStyle(ButtonStyle.Danger).setEmoji('🚨')
+            new ButtonBuilder().setCustomId('create_report_ticket').setLabel('Report Scammer').setStyle(ButtonStyle.Danger).setEmoji('🚨'),
+            new ButtonBuilder().setCustomId('create_partner_ticket').setLabel('Partner Server').setStyle(ButtonStyle.Secondary).setEmoji('🤝')
         );
 
         await message.channel.send({ embeds: [embed], components: [row] });
@@ -350,16 +362,31 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.showModal(modal);
         }
 
+        if (interaction.customId === 'create_partner_ticket') {
+            const modal = new ModalBuilder().setCustomId('modal_partner_form').setTitle('🤝 LIÊN HỆ PARTNER SERVER');
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(
+                    new TextInputBuilder().setCustomId('partner_name').setLabel('Tên Server / Cộng Đồng của bạn').setStyle(TextInputStyle.Short).setPlaceholder('Nhập tên Server của bạn...').setRequired(true)
+                ),
+                new ActionRowBuilder().addComponents(
+                    new TextInputBuilder().setCustomId('partner_link').setLabel('Link Invite / Mô tả nội dung hợp tác').setStyle(TextInputStyle.Paragraph).setPlaceholder('Dán link Server và đề xuất hình thức Partner...').setRequired(true)
+                )
+            );
+            await interaction.showModal(modal);
+        }
+
         if (interaction.customId === 'claim_ticket') {
             const member = interaction.member;
             const isStaff = member.roles.cache.has(GDTG_STAFF_ROLE_ID) || 
                             member.roles.cache.has(SELLER_ROLE_ID) || 
                             member.roles.cache.has(HOANG_DE_ROLE_ID) || 
+                            member.roles.cache.has(CHU_DE_CHE_ROLE_ID) || 
+                            member.roles.cache.has(CHU_HE_MAT_TROI_ROLE_ID) || 
                             member.roles.cache.has(MANAGER_ROLE_ID) || 
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
             if (!isStaff) {
-                return interaction.reply({ content: '❌ Chỉ có Nhân viên GDTG, Seller hoặc Quản trị viên mới có thể nhận ticket này!', flags: [MessageFlags.Ephemeral] });
+                return interaction.reply({ content: '❌ Chỉ có Ban Quản Trị hoặc Nhân viên phụ trách mới có thể nhận ticket này!', flags: [MessageFlags.Ephemeral] });
             }
 
             const channel = interaction.channel;
@@ -453,11 +480,13 @@ client.on('interactionCreate', async (interaction) => {
             const isStaff = member.roles.cache.has(GDTG_STAFF_ROLE_ID) || 
                             member.roles.cache.has(SELLER_ROLE_ID) || 
                             member.roles.cache.has(HOANG_DE_ROLE_ID) || 
+                            member.roles.cache.has(CHU_DE_CHE_ROLE_ID) || 
+                            member.roles.cache.has(CHU_HE_MAT_TROI_ROLE_ID) || 
                             member.roles.cache.has(MANAGER_ROLE_ID) || 
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
             if (!isStaff) {
-                return interaction.reply({ content: '❌ Chỉ có Nhân viên GDTG, Seller hoặc Quản trị viên mới có quyền thêm người vào ticket!', flags: [MessageFlags.Ephemeral] });
+                return interaction.reply({ content: '❌ Chỉ có Ban Quản Trị hoặc Nhân viên phụ trách mới có quyền thêm người vào ticket!', flags: [MessageFlags.Ephemeral] });
             }
 
             const modal = new ModalBuilder()
@@ -483,6 +512,8 @@ client.on('interactionCreate', async (interaction) => {
             const isStaff = member.roles.cache.has(GDTG_STAFF_ROLE_ID) || 
                             member.roles.cache.has(SELLER_ROLE_ID) ||
                             member.roles.cache.has(HOANG_DE_ROLE_ID) || 
+                            member.roles.cache.has(CHU_DE_CHE_ROLE_ID) || 
+                            member.roles.cache.has(CHU_HE_MAT_TROI_ROLE_ID) || 
                             member.roles.cache.has(MANAGER_ROLE_ID) || 
                             member.permissions.has(PermissionsBitField.Flags.Administrator);
 
@@ -686,7 +717,7 @@ client.on('interactionCreate', async (interaction) => {
             const channel = await guild.channels.create({
                 name: `gdtg-${user.username}`,
                 type: ChannelType.GuildText,
-                parent: '1551254537220661379',
+                parent: PARENT_CATEGORY_ID,
                 permissionOverwrites: permissionOverwrites,
             });
 
@@ -708,7 +739,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET GDTG ---
-            const gdtgPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${GDTG_STAFF_ROLE_ID}> `;
+            const gdtgPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${GDTG_STAFF_ROLE_ID}>`;
 
             const sentMsg = await channel.send({ 
                 content: gdtgPingContent, 
@@ -747,7 +778,7 @@ client.on('interactionCreate', async (interaction) => {
             const channel = await guild.channels.create({
                 name: `muahang-${user.username}`,
                 type: ChannelType.GuildText,
-                parent: '1551254537220661379',
+                parent: PARENT_CATEGORY_ID,
                 permissionOverwrites: permissionOverwrites,
             });
 
@@ -769,7 +800,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET MUA HÀNG ---
-            const buyPingContent = `<@${user.id}> - <@&${NKOX_ID}> - <@&${BMIH_ID}> `;
+            const buyPingContent = `<@${user.id}> - <@&${NKOX_ID}> - <@&${BMIH_ID}>`;
 
             const sentMsg = await channel.send({ 
                 content: buyPingContent, 
@@ -808,7 +839,7 @@ client.on('interactionCreate', async (interaction) => {
             const channel = await guild.channels.create({
                 name: `report-${user.username}`,
                 type: ChannelType.GuildText,
-                parent: '1551254537220661379',
+                parent: PARENT_CATEGORY_ID,
                 permissionOverwrites: permissionOverwrites,
             });
 
@@ -835,7 +866,7 @@ client.on('interactionCreate', async (interaction) => {
             );
 
             // --- PING TICKET REPORT ---
-            const reportPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}> `;
+            const reportPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}>`;
 
             await channel.send({ 
                 content: reportPingContent, 
@@ -849,6 +880,67 @@ client.on('interactionCreate', async (interaction) => {
             });
 
             await interaction.editReply({ content: `✅ Đã tiếp nhận khiếu nại và tạo kênh thành công: ${channel}` });
+        }
+
+        if (interaction.customId === 'modal_partner_form') {
+            const guild = interaction.guild;
+            const user = interaction.user;
+            const partnerName = interaction.fields.getTextInputValue('partner_name');
+            const partnerLink = interaction.fields.getTextInputValue('partner_link');
+
+            await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+
+            const targetRoles = [HOANG_DE_ROLE_ID, CHU_DE_CHE_ROLE_ID, CHU_HE_MAT_TROI_ROLE_ID, MANAGER_ROLE_ID];
+            const permissionOverwrites = buildPermissionOverwrites(guild, user.id, targetRoles);
+
+            const channel = await guild.channels.create({
+                name: `partner-${user.username}`,
+                type: ChannelType.GuildText,
+                parent: PARENT_CATEGORY_ID,
+                permissionOverwrites: permissionOverwrites,
+            });
+
+            const embed = createTicketEmbed({
+                type: 'partner',
+                claimers: [],
+                dealInfo: `• Tên Server: ${partnerName}\n• Thông tin / Link Invite: ${partnerLink}`
+            });
+
+            const row1 = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('claim_ticket').setLabel('Tiếp Nhận Partner').setStyle(ButtonStyle.Success).setEmoji('🤝'),
+                new ButtonBuilder().setCustomId('unclaim_ticket').setLabel('Hủy Nhận').setStyle(ButtonStyle.Secondary).setEmoji('🔄'),
+                new ButtonBuilder().setCustomId('transfer_ticket').setLabel('Chuyển Ticket').setStyle(ButtonStyle.Primary).setEmoji('➡️')
+            );
+
+            const row2 = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('add_member_modal').setLabel('Thêm Người').setStyle(ButtonStyle.Secondary).setEmoji('➕'),
+                new ButtonBuilder().setCustomId('close_ticket').setLabel('Đóng Ticket').setStyle(ButtonStyle.Danger).setEmoji('🔒')
+            );
+
+            // --- PING TICKET PARTNER SERVER (Ping Người tạo + Owner + Co-Owner 1 + Co-Owner 2) ---
+            const partnerPingContent = `<@${user.id}> - <@&${HOANG_DE_ROLE_ID}> - <@&${CHU_DE_CHE_ROLE_ID}> - <@&${CHU_HE_MAT_TROI_ROLE_ID}>`;
+
+            const sentMsg = await channel.send({ 
+                content: partnerPingContent, 
+                embeds: [embed], 
+                components: [row1, row2] 
+            });
+
+            ticketData[channel.id] = {
+                type: 'partner',
+                openerId: user.id,
+                opener: `<@${user.id}>`,
+                claimers: [],
+                dealInfo: `• Tên Server: ${partnerName}\n• Thông tin / Link Invite: ${partnerLink}`,
+                messageId: sentMsg.id
+            };
+
+            ticketHistory.push({
+                userId: user.id,
+                timestamp: Date.now()
+            });
+
+            await interaction.editReply({ content: `✅ Đã khởi tạo thành công ticket Partner Server tại kênh: ${channel}` });
         }
 
         if (interaction.customId.startsWith('modal_review_gdtg_')) {
