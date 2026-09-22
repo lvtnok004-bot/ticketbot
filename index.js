@@ -68,7 +68,7 @@ function createTicketEmbed(data) {
     } else if (data.type === 'partner') {
         title = '🤝 KÊNH TICKET PARTNER SERVER';
         desc = 'Cảm ơn bạn đã quan tâm hợp tác! Vui lòng chờ Owner và Co-Owner trao đổi thông tin.';
-        color = '#9b59b6';
+        color = '#f1c40f';
     }
 
     const embed = new EmbedBuilder()
@@ -301,18 +301,19 @@ client.on('messageCreate', async message => {
             .setDescription(`>>> **XIN LƯU Ý HƯỚNG DẪN:**
            • **Tạo Ticket GDTG:** Giao dịch trung gian an toàn (Game, VAR, All...)
            • **Mua Hàng:** Đặt mua các sản phẩm / dịch vụ của Shop
-           • **Report Scammer:** Tố cáo lừa đảo, khiếu nại khẩn cấp
            • **Partner Server:** Đăng ký hợp tác, giao lưu giữa các Server
+           • **Report Scammer:** Tố cáo lừa đảo, khiếu nại khẩn cấp
            
            *Lưu ý: Nói rõ nhu cầu sau khi tạo ticket và không ping quá nhiều!*`)
             .setColor('#0099ff')
             .setFooter({ text: 'Hệ thống tự động quản lý ticket' });
 
+        // ĐÃ CHUYỂN NÚT PARTNER SERVER RA SAU MUA HÀNG & CHUYỂN SANG DẠNG THUỐC TÍNH PHÙ HỢP
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('create_gdtg_ticket').setLabel('Tạo Ticket GDTG').setStyle(ButtonStyle.Primary).setEmoji('📩'),
             new ButtonBuilder().setCustomId('create_buy_ticket').setLabel('Mua Hàng').setStyle(ButtonStyle.Success).setEmoji('🛒'),
-            new ButtonBuilder().setCustomId('create_report_ticket').setLabel('Report Scammer').setStyle(ButtonStyle.Danger).setEmoji('🚨'),
-            new ButtonBuilder().setCustomId('create_partner_ticket').setLabel('Partner Server').setStyle(ButtonStyle.Secondary).setEmoji('🤝')
+            new ButtonBuilder().setCustomId('create_partner_ticket').setLabel('Partner Server').setStyle(ButtonStyle.Primary).setEmoji('🤝'),
+            new ButtonBuilder().setCustomId('create_report_ticket').setLabel('Report Scammer').setStyle(ButtonStyle.Danger).setEmoji('🚨')
         );
 
         await message.channel.send({ embeds: [embed], components: [row] });
@@ -504,6 +505,7 @@ client.on('interactionCreate', async (interaction) => {
             return await interaction.showModal(modal);
         }
 
+        // --- ĐIỀU CHỈNH ĐÓNG TICKET KHÔNG CÓ ĐÁNH GIÁ DỊCH VỤ CHO PARTNER SERVER ---
         if (interaction.customId === 'close_ticket') {
             const channel = interaction.channel;
             const data = ticketData[channel.id] || {};
@@ -519,6 +521,14 @@ client.on('interactionCreate', async (interaction) => {
 
             if (!isStaff) {
                 return interaction.reply({ content: '❌ Chỉ có nhân viên mới có quyền bấm nút đóng vé này!', flags: [MessageFlags.Ephemeral] });
+            }
+
+            // Nếu là Partner ticket, loại bỏ tính năng đánh giá dịch vụ
+            if (data.type === 'partner') {
+                await interaction.reply({ content: '🚪 Đang tiến hành lưu transcript và đóng kênh Partner Server...', flags: [MessageFlags.Ephemeral] });
+                await saveAndSendTranscript(channel, interaction.user);
+                delete ticketData[channel.id];
+                return setTimeout(() => channel.delete().catch(() => {}), 2000);
             }
 
             const optionsEmbed = new EmbedBuilder()
