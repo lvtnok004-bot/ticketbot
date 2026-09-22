@@ -370,7 +370,7 @@ client.on('interactionCreate', async (interaction) => {
                     new TextInputBuilder().setCustomId('partner_name').setLabel('Tên Server / Cộng Đồng của bạn').setStyle(TextInputStyle.Short).setPlaceholder('Nhập tên Server của bạn...').setRequired(true)
                 ),
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('partner_link').setLabel('Link Invite / Mô tả nội dung hợp tác').setStyle(TextInputStyle.Paragraph).setPlaceholder('Dán link Server và đề xuất hình thức Partner...').setRequired(true)
+                    new TextInputBuilder().setCustomId('partner_link').setLabel(' Mô tả nội dung partner').setStyle(TextInputStyle.Paragraph).setPlaceholder('Dán link Server và đề xuất hình thức Partner...').setRequired(true)
                 )
             );
             await interaction.showModal(modal);
